@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String baseUrl =
-      'http://192.168.24.215/villlink/villalink_app/backend/api';
+      'http://192.168.165.215/villlink/villalink_app/backend/api';
 
   static Map<String, String> get headers => {
     'Content-Type': 'application/json',
