@@ -7,6 +7,8 @@ class Maintenance {
   final DateTime dueDate;
   final String status;
   final DateTime createdAt;
+  final String? userName;
+  final String? flatNumber;
 
   Maintenance({
     required this.id,
@@ -15,6 +17,8 @@ class Maintenance {
     required this.dueDate,
     required this.status,
     required this.createdAt,
+    this.userName,
+    this.flatNumber,
   });
 
   factory Maintenance.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,8 @@ class Maintenance {
       dueDate: DateTime.parse(json['due_date']),
       status: json['status'] ?? 'pending',
       createdAt: DateTime.parse(json['created_at']),
+      userName: json['user_name']?.toString(),
+      flatNumber: json['flat_number']?.toString(),
     );
   }
 

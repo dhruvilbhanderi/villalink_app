@@ -17,6 +17,7 @@ class ComplaintsView extends StatelessWidget {
     // Determine role once per build
     final user = controller.user;
     final bool isPresident = (user?.userType?.toString().toLowerCase() == 'president');
+    final bool isMember = (user?.userType?.toString().toLowerCase() == 'member');
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -28,7 +29,7 @@ class ComplaintsView extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
         actions: [
-          if (isPresident) // only president can create complaint (if that's desired)
+          if (isMember) // only member can create complaint (if that's desired)
             IconButton(
               icon: const Icon(Icons.add, color: Colors.white),
               onPressed: controller.goToCreateComplaint,

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:villalink/data/models/maintenance_model.dart';
 import 'package:villalink/modules/maintenance/maintenance_controller.dart';
+import '../../shared/widgets/common_app_bar.dart';
+import '../../shared/widgets/common_card.dart';
+import '../../shared/widgets/common_button.dart';
+import '../../shared/themes/app_colors.dart';
 
 class MaintenanceView extends StatelessWidget {
   MaintenanceView({Key? key}) : super(key: key);
@@ -11,122 +16,131 @@ class MaintenanceView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        backgroundColor: Colors.blue.shade600,
-        title: const Text('Maintenance', style: TextStyle(color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Get.back(),
-        ),
+      backgroundColor: AppColors.background,
+      appBar: const CommonAppBar(
+        title: 'Maintenance',
       ),
       body: RefreshIndicator(
         onRefresh: controller.loadMaintenance,
         child: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+            );
           }
 
           if (controller.maintenanceRecords.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.payment_outlined, size: 80, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'No maintenance records found',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
+            return Center(
+              child: CommonCard(
+                margin: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.payment_outlined,
+                      size: 80,
+                      color: AppColors.textLight,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No Maintenance Records',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'No maintenance records found for your account',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           return Column(
             children: [
-              // Summary Card
-              Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.green.shade600, Colors.green.shade400],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
+              // Summary Section
+              Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    const Text(
-                      'Total Outstanding',
-                      style: TextStyle(fontSize: 16, color: Colors.white70),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '₹${controller.totalOutstanding.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    // Outstanding Amount Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.successGradient,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.success.withOpacity(0.3),
+                            offset: const Offset(0, 4),
+                            blurRadius: 16,
+                            spreadRadius: 0,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Total Outstanding',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '₹${controller.totalOutstanding.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
+                    // Stats Row
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Column(
-                          children: [
-                            Text(
-                              '${controller.paidCount}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const Text(
-                              'Paid',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
+                        Expanded(
+                          child: StatusCard(
+                            title: 'Paid',
+                            value: '${controller.paidCount}',
+                            icon: Icons.check_circle_outlined,
+                            color: AppColors.success,
+                          ),
                         ),
-                        Column(
-                          children: [
-                            Text(
-                              '${controller.pendingCount}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const Text(
-                              'Pending',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: StatusCard(
+                            title: 'Pending',
+                            value: '${controller.pendingCount}',
+                            icon: Icons.pending_outlined,
+                            color: AppColors.warning,
+                          ),
                         ),
-                        Column(
-                          children: [
-                            Text(
-                              '${controller.overdueCount}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const Text(
-                              'Overdue',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: StatusCard(
+                            title: 'Overdue',
+                            value: '${controller.overdueCount}',
+                            icon: Icons.warning_outlined,
+                            color: AppColors.error,
+                          ),
                         ),
                       ],
                     ),
@@ -140,126 +154,137 @@ class MaintenanceView extends StatelessWidget {
                   itemCount: controller.maintenanceRecords.length,
                   itemBuilder: (context, index) {
                     final maintenance = controller.maintenanceRecords[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            spreadRadius: 1,
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: maintenance.statusColor.withOpacity(
-                                      0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                  child: Icon(
-                                    maintenance.isPaid
-                                        ? Icons.check_circle
-                                        : Icons.payment,
-                                    color: maintenance.statusColor,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '₹${maintenance.amount.toStringAsFixed(2)}',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Due: ${controller.formatDate(maintenance.dueDate)}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: maintenance.statusColor.withOpacity(
-                                      0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    maintenance.statusText,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: maintenance.statusColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (!maintenance.isPaid) ...[
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () =>
-                                      controller.payMaintenance(maintenance),
-                                  icon: const Icon(
-                                    Icons.payment,
-                                    color: Colors.white,
-                                  ),
-                                  label: const Text(
-                                    'Pay Now',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green.shade600,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    );
+                    return _buildMaintenanceCard(maintenance);
                   },
                 ),
               ),
             ],
           );
         }),
+      ),
+    );
+  }
+
+  Widget _buildMaintenanceCard(Maintenance maintenance) {
+    final isPresident = controller.user?.isPresident ?? false;
+    
+    return CommonCard(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Status Icon
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      maintenance.statusColor.withOpacity(0.1),
+                      maintenance.statusColor.withOpacity(0.2),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Icon(
+                  maintenance.isPaid
+                      ? Icons.check_circle_outline
+                      : maintenance.isOverdue
+                          ? Icons.warning_outlined
+                          : Icons.schedule_outlined,
+                  color: maintenance.statusColor,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // User Name (for president) or Amount (for member)
+                    if (isPresident && maintenance.userName != null) ...[
+                      Text(
+                        maintenance.userName!,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      if (maintenance.flatNumber != null)
+                        Text(
+                          'Flat: ${maintenance.flatNumber}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      const SizedBox(height: 4),
+                    ],
+                    
+                    // Amount
+                    Text(
+                      '₹${maintenance.amount.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: isPresident ? 16 : 20,
+                        fontWeight: FontWeight.bold,
+                        color: maintenance.statusColor,
+                      ),
+                    ),
+                    
+                    // Due Date
+                    Text(
+                      'Due: ${controller.formatDate(maintenance.dueDate)}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textLight,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Status Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: maintenance.statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: maintenance.statusColor.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  maintenance.statusText,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: maintenance.statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          // Pay Button (only for unpaid records and current user)
+          if (!maintenance.isPaid && (!isPresident || maintenance.userId == controller.user?.id)) ...[
+            const SizedBox(height: 16),
+            CommonButton.success(
+              text: 'Pay Now',
+              icon: Icons.payment_outlined,
+              width: double.infinity,
+              onPressed: () => controller.payMaintenance(maintenance),
+            ),
+          ],
+        ],
       ),
     );
   }

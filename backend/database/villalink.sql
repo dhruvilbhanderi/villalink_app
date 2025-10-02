@@ -10,6 +10,7 @@ CREATE TABLE users (
     phone VARCHAR(15),
     flat_number VARCHAR(10),
     user_type ENUM('president', 'member') NOT NULL,
+    is_active BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -49,14 +50,14 @@ CREATE TABLE maintenance (
 
 -- Insert sample data
 -- Default president user
-INSERT INTO users (name, email, password, phone, flat_number, user_type) VALUES 
-('Admin President', 'president@villalink.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543210', 'A-101', 'president');
+INSERT INTO users (name, email, password, phone, flat_number, user_type, is_active) VALUES 
+('Admin President', 'president@villalink.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543210', 'A-101', 'president', TRUE);
 
--- Sample member users
-INSERT INTO users (name, email, password, phone, flat_number, user_type) VALUES 
-('John Doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543211', 'B-201', 'member'),
-('Jane Smith', 'jane@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543212', 'C-301', 'member'),
-('Mike Johnson', 'mike@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543213', 'D-401', 'member');
+-- Sample member users (inactive by default)
+INSERT INTO users (name, email, password, phone, flat_number, user_type, is_active) VALUES 
+('John Doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543211', 'B-201', 'member', FALSE),
+('Jane Smith', 'jane@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543212', 'C-301', 'member', TRUE),
+('Mike Johnson', 'mike@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543213', 'D-401', 'member', FALSE);
 
 -- Sample notices
 INSERT INTO notices (title, description, created_by) VALUES 
@@ -81,3 +82,7 @@ INSERT INTO maintenance (user_id, amount, due_date) VALUES
 
 -- Update some maintenance as paid
 UPDATE maintenance SET status = 'paid' WHERE id IN (4, 5);
+
+ALTER TABLE complaints
+MODIFY status ENUM('pending', 'in_progress', 'resolved', 'closed')
+  NOT NULL DEFAULT 'pending';

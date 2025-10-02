@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     
-    $query = "INSERT INTO users (name, email, password, phone, flat_number, user_type) VALUES (?, ?, ?, ?, ?, ?)";
+    $query = "INSERT INTO users (name, email, password, phone, flat_number, user_type, is_active) VALUES (?, ?, ?, ?, ?, ?, FALSE)";
     $stmt = $db->prepare($query);
     
     if ($stmt->execute([$name, $email, $hashed_password, $phone, $flat_number, $user_type])) {

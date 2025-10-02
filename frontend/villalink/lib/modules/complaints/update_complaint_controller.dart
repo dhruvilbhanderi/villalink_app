@@ -5,7 +5,7 @@ import '../../data/services/api_service.dart';
 class UpdateComplaintController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  // Incoming data (pass Complaint or map via Get.arguments)
+  // Incoming data
   late final int complaintId;
   late final String initialStatus;
 
@@ -16,13 +16,12 @@ class UpdateComplaintController extends GetxController {
   // UI state
   final RxBool isLoading = false.obs;
 
-  // Allowed statuses (match your backend values). Add any statuses your backend might use.
+  // Allowed statuses (match your backend values).
   final List<String> statusOptions = [
     'pending',
     'in_progress',
     'resolved',
-    'closed', // include closed if your backend uses it
-    // add more if your backend supports
+    'closed',
   ];
 
   @override
@@ -32,7 +31,9 @@ class UpdateComplaintController extends GetxController {
     final args = Get.arguments;
 
     if (args is Map<String, dynamic>) {
-      complaintId = args['id'] is int ? args['id'] : int.parse(args['id'].toString());
+      complaintId = args['id'] is int
+          ? args['id']
+          : int.tryParse(args['id'].toString()) ?? -1;
       initialStatus = (args['status']?.toString() ?? 'pending');
     } else {
       // If caller passed a Complaint object
@@ -41,12 +42,10 @@ class UpdateComplaintController extends GetxController {
       initialStatus = complaint?.status ?? 'pending';
     }
 
-    // If initialStatus exists in statusOptions, set it; otherwise leave blank (null selection)
+    // Set dropdown initial value
     if (statusOptions.contains(initialStatus)) {
       status.value = initialStatus;
     } else {
-      // leave status empty so the dropdown shows no selection,
-      // forcing the user to explicitly choose one if needed
       status.value = '';
     }
   }
@@ -57,13 +56,25 @@ class UpdateComplaintController extends GetxController {
     super.onClose();
   }
 
+  bool _isSuccess(dynamic val) {
+    if (val == null) return false;
+    if (val is bool) return val;
+    if (val is int) return val == 1;
+    if (val is String) {
+      return val.toLowerCase() == 'true' || val == '1';
+    }
+    return false;
+  }
+
   Future<void> updateComplaint() async {
     if (!formKey.currentState!.validate()) return;
 
-    // If status is empty, validation should already have prevented this,
-    // but protect again:
     if (status.value.isEmpty) {
-      Get.snackbar('Error', 'Please select a status', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Please select a status',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
@@ -72,25 +83,43 @@ class UpdateComplaintController extends GetxController {
       final payload = {
         'complaint_id': complaintId.toString(),
         'status': status.value,
-        //'note': noteController.text.trim(),
+        'note': noteController.text.trim(),
       };
 
-      final response = await ApiService.post('/complaints/update_complaint.php', payload);
+      final response = await ApiService.post(
+        '/complaints/update_complaint.php',
+        payload,
+      );
 
-      if (response['success'] == true) {
-        Get.snackbar('Success', response['message'] ?? 'Complaint updated');
-        Get.back(result: {
-          'updated': true,
-          'complaint_id': complaintId,
-          'status': status.value,
-          'note': noteController.text.trim(),
-        });
+      if (_isSuccess(response['success'])) {
+        Get.snackbar(
+          'Success',
+          response['message'] ?? 'Complaint updated',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+
+        isLoading.value = false;
+        Get.back(
+          result: {
+            'updated': true,
+            'complaint_id': complaintId,
+            'status': status.value,
+            'note': noteController.text.trim(),
+          },
+        );
       } else {
-        Get.snackbar('Error', response['message'] ?? 'Failed to update complaint',
-            snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          response['message'] ?? 'Failed to update complaint',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Network error: $e', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Network error: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading.value = false;
     }

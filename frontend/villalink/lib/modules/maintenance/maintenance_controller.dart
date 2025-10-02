@@ -5,6 +5,9 @@ import '../../data/services/api_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/maintenance_model.dart';
+import '../../shared/utils/app_snackbar.dart';
+import '../../shared/widgets/common_button.dart';
+import '../../shared/themes/app_colors.dart';
 
 class MaintenanceController extends GetxController {
   final RxList<Maintenance> maintenanceRecords = <Maintenance>[].obs;
@@ -44,7 +47,9 @@ class MaintenanceController extends GetxController {
         maintenanceRecords.assignAll(maintenanceList);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load maintenance records');
+      if (Get.context != null) {
+        AppSnackBar.showError(Get.context!, 'Failed to load maintenance records');
+      }
     } finally {
       isLoading.value = false;
     }
@@ -52,27 +57,79 @@ class MaintenanceController extends GetxController {
 
   void payMaintenance(Maintenance maintenance) {
     Get.dialog(
-      AlertDialog(
-        title: const Text('Confirm Payment'),
-        content: Text(
-          'Are you sure you want to pay ₹${maintenance.amount.toStringAsFixed(2)}?',
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
           ),
-          ElevatedButton(
-            onPressed: () => _processPayment(maintenance),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green.shade600,
-            ),
-            child: const Text(
-              'Confirm',
-              style: TextStyle(color: Colors.white),
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.successLight,
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: const Icon(
+                  Icons.payment_outlined,
+                  color: AppColors.success,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Title
+              const Text(
+                'Confirm Payment',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Message
+              Text(
+                'Are you sure you want to pay ₹${maintenance.amount.toStringAsFixed(2)}?',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 32),
+              
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: CommonButton.outline(
+                      text: 'Cancel',
+                      onPressed: () => Get.back(),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: CommonButton.success(
+                      text: 'Pay Now',
+                      onPressed: () => _processPayment(maintenance),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -88,27 +145,18 @@ class MaintenanceController extends GetxController {
 
       if (response['success'] == true) {
         loadMaintenance(); // Refresh data
-        Get.snackbar(
-          'Success',
-          'Payment processed successfully!',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        if (Get.context != null) {
+          AppSnackBar.showSuccess(Get.context!, 'Payment processed successfully!');
+        }
       } else {
-        Get.snackbar(
-          'Error',
-          response['message'] ?? 'Payment failed',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        if (Get.context != null) {
+          AppSnackBar.showError(Get.context!, response['message'] ?? 'Payment failed');
+        }
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Something went wrong. Please try again.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      if (Get.context != null) {
+        AppSnackBar.showError(Get.context!, 'Something went wrong. Please try again.');
+      }
     }
   }
 
